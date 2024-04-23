@@ -1,31 +1,45 @@
 from collections import deque
 from heapq import heappush, heappop 
+import heapq
 
 def shortest_shortest_path(graph, source):
-    """
-    Params: 
-      graph.....a graph represented as a dict where each key is a vertex
-                and the value is a set of (vertex, weight) tuples (as in the test case)
-      source....the source node
-      
-    Returns:
-      a dict where each key is a vertex and the value is a tuple of
-      (shortest path weight, shortest path number of edges). See test case for example.
-    """
-    ### TODO
-    pass
+# This will store the shortest path weight and number of edges for each vertex
+  shortest_paths = {vertex: (float('inf'), float('inf')) for vertex   in graph}
+  shortest_paths[source] = (0, 0)
+
+# Priority queue to store vertices based on path weight and edge count
+  priority_queue = [(0, 0, source)]  # (weight, edges, vertex)
+
+  while priority_queue:
+    current_weight, current_edges, current_vertex = heapq.heappop(priority_queue)
+
+    for neighbor, weight in graph[current_vertex]:
+        weight_via_current = current_weight + weight
+        edges_via_current = current_edges + 1
+
+        if (weight_via_current < shortest_paths[neighbor][0] or
+            (weight_via_current == shortest_paths[neighbor][0] and edges_via_current < shortest_paths[neighbor][1])):
+            shortest_paths[neighbor] = (weight_via_current, edges_via_current)
+            heapq.heappush(priority_queue, (weight_via_current, edges_via_current, neighbor))
+
+  return shortest_paths
     
 
     
     
 def bfs_path(graph, source):
-    """
-    Returns:
-      a dict where each key is a vertex and the value is the parent of 
-      that vertex in the shortest path tree.
-    """
-    ###TODO
-    pass
+  parents = {source: None}
+  queue = deque([source])
+
+  while queue:
+    current = queue.popleft()
+
+    for neighbor in graph[current]:  # Treat neighbors as direct vertices
+        if neighbor not in parents:
+            parents[neighbor] = current
+            queue.append(neighbor)
+
+  return parents
 
 def get_sample_graph():
      return {'s': {'a', 'b'},
@@ -38,11 +52,17 @@ def get_sample_graph():
 
     
 def get_path(parents, destination):
-    """
-    Returns:
-      The shortest path from the source node to this destination node 
-      (excluding the destination node itself). See test_get_path for an example.
-    """
-    ###TODO
-    pass
+    path = []
+    step = destination
+
+    # Traverse from the destination's parent back to the source
+    if destination in parents:
+        step = parents[destination]  # Start with the parent of the destination
+
+    while step is not None and parents[step] is not None:
+        path.append(step)
+        step = parents[step]
+
+    path.reverse()
+    return path 
 
